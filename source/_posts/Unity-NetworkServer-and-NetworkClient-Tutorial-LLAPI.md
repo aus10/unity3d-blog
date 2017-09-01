@@ -53,7 +53,7 @@ Next We register handlers to receive events from the client. We can do that by c
 
 ## Setting Up the Client
 
-#### Client.cs (If clients can not be server)
+#### Client.cs (If client is not the server)
 
 ``` c#
 using UnityEngine;
@@ -91,7 +91,15 @@ using UnityEngine.Networking;
 public class LocalClient : MonoBehaviour {
  
     void Start () {
+        SetupServer();
         SetupClient();
+    }
+
+    public void SetupServer()
+    {
+        NetworkServer.Listen(4444);
+ 
+        NetworkServer.RegisterHandler(MsgType.Connect, OnPlayerConnect);
     }
  
     public void SetupClient()
@@ -186,7 +194,15 @@ var message = new RegisterPlayerWithServerMessage
 myClient.Send(MyMsgType.RegisterPlayerWithServer, message);
 ```
 
-The server should print out "austin jeane connected to server".
+The server should print out _austin jeane connected to server_.
+
+### Reliable vs Unreliable Messages
+
+In the above example, I send my Register Player message using _myClient.Send_. Messages sent using the send method are send through the "Reliable" channel, meaning that "Each message is guaranteed to be delivered but not guaranteed to be in order". You should send messages through the reliable channel that you require to be delivered, such as registering a player or requesting to join a game. Even though the message is guaranteed to be delivered, it is not the fastest way to send a message.
+
+The fastest way to send a message is through the "Unreliable" channel. To send messages through this channel you use the method _SendUnreliable_ instead of _Send_. Sending messages through the unreliable channel are faster than reliable messages but are not guaranteed to be delivered. This is ideal for fast paced games and is often used for things such as updating users positions.
+
+There are other channels as well, but these 2 are the most used. 
 
 ## Conclusion
 
